@@ -3,19 +3,37 @@ import csv
 
 def tikrinti_asmens_kodus(matricos_gyventojai_su_agentu_xqtzsch):
     neteisingi_kodai = []
+    asmens_kodai = {}
 
+    # nuskaitom failą
     with open(matricos_gyventojai_su_agentu_xqtzsch, 'r', newline='') as csv_failas:
         skaitytuvas = csv.reader(csv_failas)
 
-        # Praleidžiame antraštės eilutę, jei ji yra
+        # antraštės eilutė
         next(skaitytuvas, None)
 
         for eilute in skaitytuvas:
-            asmens_kodas = eilute[0]  # Pirmas stulpelis, kuris turi asmens kodą
+            asmens_kodas = eilute[0]  # Pirmas stulpelis pagal excel kur surašyti asmens kodai
 
-            # Tinkamumo patikrinimas asmens kodo formatui
+            # Surenka neteisingus asmens kodus
             if not patikrinti_asmens_koda(asmens_kodas):
                 neteisingi_kodai.append(asmens_kodas)
+
+                if asmens_kodas in asmens_kodai:
+                    asmens_kodai[asmens_kodas] += 1
+                else:
+                    asmens_kodai[asmens_kodas] = 1
+
+        # Rasti dublikatus
+        dublikatai = [kodas for kodas, kiekis in asmens_kodai.items() if kiekis > 1]
+
+        if dublikatai:
+            print("Rasti dublikatai:")
+            for dublikatas in dublikatai:
+                print(dublikatas)
+        else:
+            print("Dublikatų nėra.")
+
 
     if neteisingi_kodai:
         print("Rasti neteisingi asmens kodai:")
@@ -23,6 +41,9 @@ def tikrinti_asmens_kodus(matricos_gyventojai_su_agentu_xqtzsch):
             print(neteisingas_kodas)
     else:
         print("Visi asmens kodai yra teisingi.")
+
+
+
 
 
 def patikrinti_asmens_koda(asmens_kodas):
@@ -34,6 +55,7 @@ def patikrinti_asmens_koda(asmens_kodas):
         return False
 
     if not (
+        # Patikrina metus, mėnesį, dieną
             00 <= int(asmens_kodas[1:3]) <= 99 and
             2 <= int(asmens_kodas[0:1]) <= 6 and
             1 <= int(asmens_kodas[3:5]) <= 12 and
@@ -60,8 +82,10 @@ def patikrinti_asmens_koda(asmens_kodas):
     # Tikriname, ar paskutinis skaitmuo sutampa su kontroliniu skaičiumi
     return int(asmens_kodas[10]) == kontrolinis_skaicius
 
+
+
 if __name__ == "__main__":
     matricos_gyventojai_su_agentu_xqtzsch = 'matricos_gyventojai_su_agentu_xqtzsch.csv'
     tikrinti_asmens_kodus(matricos_gyventojai_su_agentu_xqtzsch)
 
-# metai, menesis, diena, 11skaitmenu, nera simboliu, paskutinis skaiciu geras
+# metai, mėnesis, diena, 11 skaitmenų, nėra simbolių, paskutinis skaičius teisingas, vienodu asmens kodų nėra.
